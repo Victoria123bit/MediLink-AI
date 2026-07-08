@@ -53,4 +53,4 @@ def logout():
     st.session_state.full_name = ""
     st.session_state.email = ""
 
-    st.switch_page("Medilink_AI.py")
+    st.switch_page("MediLink_AI.py")
