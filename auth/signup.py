@@ -127,23 +127,37 @@ Create your free account to access AI-powered healthcare guidance, medication re
             success = register_user(
                 full_name,
                 email,
+                password,
                 phone,
                 age,
-                gender,
-                password
-            )
+                gender
+    )
 
         if success:
 
-            st.success("🎉 Your account has been created successfully!")
-
             st.balloons()
 
-            st.info("✅ You can now log in using your email and password.")
+            st.success("""
+### 🎉 Account Created Successfully!
+
+Welcome to **MediLink AI**.
+
+Your account has been created successfully.
+
+✅ You can now sign in using your email address and password.
+""")
+
+            st.toast("✅ Account created successfully!")
+
+            st.info(
+                "👉 Click **🔐 Login** above to access your account."
+            )
 
         else:
 
-            st.error("❌ An account with this email already exists.")
+            st.error(
+                "❌ An account with this email already exists."
+            )
 
     st.markdown("---")
 

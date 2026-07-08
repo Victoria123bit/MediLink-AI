@@ -1,32 +1,67 @@
 import sqlite3
-from utils.security import hash_password, verify_password
+import bcrypt
+import random
+import secrets
 
-DATABASE = "database/medilink.db"
+from datetime import datetime, timedelta
 
 
-# ==========================
+# ==========================================
 # DATABASE CONNECTION
-# ==========================
+# ==========================================
+
+DATABASE_NAME = "database/medilink.db"
+
 
 def get_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.execute("PRAGMA foreign_keys = ON")
+
+    conn = sqlite3.connect(DATABASE_NAME)
+
+    conn.row_factory = sqlite3.Row
+
     return conn
 
-# ==========================
+
+# ==========================================
+# HASH PASSWORD
+# ==========================================
+
+def hash_password(password):
+
+    return bcrypt.hashpw(
+        password.encode(),
+        bcrypt.gensalt()
+    ).decode()
+
+
+# ==========================================
+# VERIFY PASSWORD
+# ==========================================
+
+def verify_password(password, hashed):
+
+    return bcrypt.checkpw(
+        password.encode(),
+        hashed.encode()
+    )
+
+
+# ==========================================
 # CREATE DATABASE
-# ==========================
+# ==========================================
 
 def create_database():
 
     conn = get_connection()
+
     cursor = conn.cursor()
 
-    # ==========================
+    # ======================================
     # USERS TABLE
-    # ==========================
+    # ======================================
 
     cursor.execute("""
+
     CREATE TABLE IF NOT EXISTS users(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,134 +70,189 @@ def create_database():
 
         email TEXT UNIQUE NOT NULL,
 
+        password TEXT NOT NULL,
+
         phone TEXT,
 
         age INTEGER,
 
         gender TEXT,
 
-        password TEXT NOT NULL,
-
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT
 
     )
+
     """)
 
-    # ==========================
+    # ======================================
     # MEDICATION REMINDERS
-    # ==========================
+    # ======================================
 
     cursor.execute("""
+
     CREATE TABLE IF NOT EXISTS reminders(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        user_id INTEGER NOT NULL,
+        user_id INTEGER,
 
-        medication TEXT NOT NULL,
+        medication TEXT,
 
-        dosage TEXT NOT NULL,
+        dosage TEXT,
 
-        reminder_time TEXT NOT NULL,
+        reminder_time TEXT,
 
-        FOREIGN KEY(user_id)
-        REFERENCES users(id)
+        created_at TEXT
 
     )
+
     """)
 
-    # ==========================
+    # ======================================
     # AI HISTORY
-    # ==========================
+    # ======================================
 
     cursor.execute("""
+
     CREATE TABLE IF NOT EXISTS ai_history(
 
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        user_id INTEGER NOT NULL,
+        user_id INTEGER,
 
-        symptoms TEXT NOT NULL,
+        symptoms TEXT,
 
-        ai_response TEXT NOT NULL,
+        response TEXT,
 
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-        FOREIGN KEY(user_id)
-        REFERENCES users(id)
+        created_at TEXT
 
     )
+
+    """)
+
+    # ======================================
+    # PASSWORD RESET OTP
+    # ======================================
+
+    cursor.execute("""
+
+    CREATE TABLE IF NOT EXISTS password_reset_otp(
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        email TEXT,
+
+        otp TEXT,
+
+        expires_at TEXT
+
+    )
+
     """)
 
     conn.commit()
+
     conn.close()
 
+# ==========================================
+# CREATE USER
+# ==========================================
 
-# ==========================
-# REGISTER USER
-# ==========================
-
-def register_user(
+def create_user(
     full_name,
     email,
+    password,
     phone,
     age,
-    gender,
-    password
+    gender
 ):
-
-    full_name = full_name.strip()
-    email = email.strip().lower()
-    phone = phone.strip()
 
     conn = get_connection()
     cursor = conn.cursor()
 
     hashed_password = hash_password(password)
-    try:
 
-        cursor.execute("""
-
+    cursor.execute(
+        """
         INSERT INTO users(
-
             full_name,
             email,
+            password,
             phone,
             age,
             gender,
-            password
-
+            created_at
         )
-
-        VALUES(?,?,?,?,?,?)
-
-        """, (
-
+        VALUES(?,?,?,?,?,?,?)
+        """,
+        (
             full_name,
-            email,
+            email.lower(),
+            hashed_password,
             phone,
             age,
             gender,
-            hashed_password
+            datetime.now().isoformat()
+        )
+    )
 
-        ))
+    conn.commit()
+    conn.close()
+# ==========================================
+# REGISTER USER
+# ==========================================
 
-        conn.commit()
+def register_user(
+    full_name,
+    email,
+    password,
+    phone,
+    age,
+    gender
+):
 
-        return True
-
-    except sqlite3.IntegrityError:
-
+    if email_exists(email):
         return False
 
-    finally:
+    create_user(
+        full_name,
+        email,
+        password,
+        phone,
+        age,
+        gender
+    )
 
-        conn.close()
+    return True
+
+# ==========================================
+# EMAIL EXISTS
+# ==========================================
+
+def email_exists(email):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id
+        FROM users
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (email.lower(),)
+    )
+
+    exists = cursor.fetchone() is not None
+
+    conn.close()
+
+    return exists
 
 
-# ==========================
+# ==========================================
 # LOGIN USER
-# ==========================
+# ==========================================
 
 def login_user(email, password):
 
@@ -175,22 +265,99 @@ def login_user(email, password):
         FROM users
         WHERE LOWER(email)=LOWER(?)
         """,
-        (email.strip(),)
+        (email.lower(),)
     )
 
     user = cursor.fetchone()
 
     conn.close()
 
-    if user and verify_password(password, user[6]):
+    if user and verify_password(password, user["password"]):
         return user
 
     return None
 
 
-# ==========================
+# ==========================================
+# GET USER PROFILE
+# ==========================================
+
+def get_user_profile(user_id):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            full_name,
+            email,
+            phone,
+            age,
+            gender,
+            created_at
+        FROM users
+        WHERE id=?
+        """,
+        (user_id,)
+    )
+
+    user = cursor.fetchone()
+
+    conn.close()
+
+    return user
+
+
+# ==========================================
+# TOTAL USERS
+# ==========================================
+
+def get_total_users():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT COUNT(*) AS total FROM users"
+    )
+
+    total = cursor.fetchone()["total"]
+
+    conn.close()
+
+    return total
+
+
+# ==========================================
+# UPDATE PASSWORD
+# ==========================================
+
+def update_password(email, new_password):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    hashed_password = hash_password(new_password)
+
+    cursor.execute(
+        """
+        UPDATE users
+        SET password=?
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (
+            hashed_password,
+            email.lower()
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+# ==========================================
 # ADD REMINDER
-# ==========================
+# ==========================================
 
 def add_reminder(
     user_id,
@@ -202,52 +369,48 @@ def add_reminder(
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-
-    INSERT INTO reminders(
-
-        user_id,
-        medication,
-        dosage,
-        reminder_time
-
+    cursor.execute(
+        """
+        INSERT INTO reminders(
+            user_id,
+            medication,
+            dosage,
+            reminder_time,
+            created_at
+        )
+        VALUES(?,?,?,?,?)
+        """,
+        (
+            user_id,
+            medication,
+            dosage,
+            reminder_time,
+            datetime.now().isoformat()
+        )
     )
-
-    VALUES(?,?,?,?)
-
-    """, (
-
-        user_id,
-        medication,
-        dosage,
-        reminder_time
-
-    ))
 
     conn.commit()
     conn.close()
 
 
-# ==========================
+# ==========================================
 # GET REMINDERS
-# ==========================
+# ==========================================
 
 def get_reminders(user_id):
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-
-    SELECT *
-
-    FROM reminders
-
-    WHERE user_id=?
-
-    ORDER BY reminder_time
-
-    """, (user_id,))
+    cursor.execute(
+        """
+        SELECT *
+        FROM reminders
+        WHERE user_id=?
+        ORDER BY reminder_time
+        """,
+        (user_id,)
+    )
 
     reminders = cursor.fetchall()
 
@@ -256,94 +419,38 @@ def get_reminders(user_id):
     return reminders
 
 
-# ==========================
+# ==========================================
 # TOTAL REMINDERS
-# ==========================
+# ==========================================
 
 def get_total_reminders(user_id):
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM reminders
+        WHERE user_id=?
+        """,
+        (user_id,)
+    )
 
-    SELECT COUNT(*)
-
-    FROM reminders
-
-    WHERE user_id=?
-
-    """, (user_id,))
-
-    total = cursor.fetchone()[0]
+    total = cursor.fetchone()["total"]
 
     conn.close()
 
     return total
 
-# ==========================
-# DELETE REMINDER
-# ==========================
+# ==========================================
+# SAVE AI HISTORY
+# ==========================================
 
-def delete_reminder(reminder_id):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        DELETE FROM reminders
-        WHERE id=?
-        """,
-        (reminder_id,)
-    )
-
-    conn.commit()
-    conn.close()
-
-
-# ==========================
-# USER PROFILE
-# ==========================
-
-def get_user_profile(user_id):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-
-    SELECT
-
-        full_name,
-        email,
-        phone,
-        age,
-        gender,
-        created_at
-
-    FROM users
-
-    WHERE id=?
-
-    """, (user_id,))
-
-    user = cursor.fetchone()
-
-    conn.close()
-
-    return user
-
-# ==========================
-# UPDATE USER PROFILE
-# ==========================
-
-def update_user_profile(
+def save_ai_history(
     user_id,
-    full_name,
-    phone,
-    age,
-    gender
+    symptoms,
+    response
 ):
 
     conn = get_connection()
@@ -351,20 +458,19 @@ def update_user_profile(
 
     cursor.execute(
         """
-        UPDATE users
-        SET
-            full_name=?,
-            phone=?,
-            age=?,
-            gender=?
-        WHERE id=?
+        INSERT INTO ai_history(
+            user_id,
+            symptoms,
+            response,
+            created_at
+        )
+        VALUES(?,?,?,?)
         """,
         (
-            full_name,
-            phone,
-            age,
-            gender,
-            user_id
+            user_id,
+            symptoms,
+            response,
+            datetime.now().isoformat()
         )
     )
 
@@ -372,91 +478,24 @@ def update_user_profile(
     conn.close()
 
 
-# ==========================
-# TOTAL USERS
-# ==========================
-
-def get_total_users():
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-
-    SELECT COUNT(*)
-
-    FROM users
-
-    """)
-
-    total = cursor.fetchone()[0]
-
-    conn.close()
-
-    return total
-
-
-# ==========================
-# SAVE AI HISTORY
-# ==========================
-
-def save_ai_history(
-    user_id,
-    symptoms,
-    ai_response
-):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-
-    INSERT INTO ai_history(
-
-        user_id,
-        symptoms,
-        ai_response
-
-    )
-
-    VALUES(?,?,?)
-
-    """, (
-
-        user_id,
-        symptoms,
-        ai_response
-
-    ))
-
-    conn.commit()
-    conn.close()
-
-
-# ==========================
+# ==========================================
 # GET AI HISTORY
-# ==========================
+# ==========================================
 
 def get_ai_history(user_id):
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-
-    SELECT
-
-        symptoms,
-        ai_response,
-        created_at
-
-    FROM ai_history
-
-    WHERE user_id=?
-
-    ORDER BY created_at DESC
-
-    """, (user_id,))
+    cursor.execute(
+        """
+        SELECT *
+        FROM ai_history
+        WHERE user_id=?
+        ORDER BY created_at DESC
+        """,
+        (user_id,)
+    )
 
     history = cursor.fetchall()
 
@@ -465,27 +504,131 @@ def get_ai_history(user_id):
     return history
 
 
-# ==========================
+# ==========================================
 # TOTAL AI CHECKS
-# ==========================
+# ==========================================
 
 def get_total_ai_checks(user_id):
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM ai_history
+        WHERE user_id=?
+        """,
+        (user_id,)
+    )
 
-    SELECT COUNT(*)
-
-    FROM ai_history
-
-    WHERE user_id=?
-
-    """, (user_id,))
-
-    total = cursor.fetchone()[0]
+    total = cursor.fetchone()["total"]
 
     conn.close()
 
     return total
+
+
+# ==========================================
+# CREATE PASSWORD RESET OTP
+# ==========================================
+
+def create_password_reset_otp(email):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    otp = str(random.randint(100000, 999999))
+
+    expiry = (
+        datetime.now() +
+        timedelta(minutes=10)
+    ).isoformat()
+
+    cursor.execute(
+        """
+        DELETE FROM password_reset_otp
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (email.lower(),)
+    )
+
+    cursor.execute(
+        """
+        INSERT INTO password_reset_otp(
+            email,
+            otp,
+            expires_at
+        )
+        VALUES(?,?,?)
+        """,
+        (
+            email.lower(),
+            otp,
+            expiry
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    return otp
+
+
+# ==========================================
+# VERIFY PASSWORD RESET OTP
+# ==========================================
+
+def verify_password_reset_otp(email, otp):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT otp, expires_at
+        FROM password_reset_otp
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (email.lower(),)
+    )
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row is None:
+        return False
+
+    if row["otp"] != otp:
+        return False
+
+    expiry = datetime.fromisoformat(
+        row["expires_at"]
+    )
+
+    if datetime.now() > expiry:
+        return False
+
+    return True
+
+
+# ==========================================
+# DELETE PASSWORD RESET OTP
+# ==========================================
+
+def delete_password_reset_otp(email):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        DELETE FROM password_reset_otp
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (email.lower(),)
+    )
+
+    conn.commit()
+    conn.close()

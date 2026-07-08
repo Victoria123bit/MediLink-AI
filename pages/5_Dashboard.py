@@ -98,10 +98,12 @@ with col3:
 with col4:
 
     days = (
-        datetime.now() -
-        datetime.strptime(user[5][:10], "%Y-%m-%d")
-    ).days
-
+    datetime.now() -
+    datetime.strptime(
+        user["created_at"][:10],
+        "%Y-%m-%d"
+    )
+).days
     st.metric(
         "📅 Member For",
         f"{days} Days"
@@ -161,11 +163,11 @@ with left:
 
 ### 👤 Profile
 
-**Name:** {user[0]}
+**Name:** {user["full_name"]}
 
-**Email:** {user[1]}
+**Email:** {user["email"]}
 
-**Phone:** {user[2]}
+**Phone:** {user["phone"]}
 
 """)
 
@@ -175,11 +177,11 @@ with right:
 
 ### 📋 Membership
 
-**Age:** {user[3]}
+**Age:** {user["age"]}
 
-**Gender:** {user[4]}
+**Gender:** {user["gender"]}
 
-**Member Since:** {user[5][:10]}
+**Member Since:** {user["created_at"][:10]}
 
 """)
 

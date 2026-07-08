@@ -157,15 +157,15 @@ if reminders:
         st.markdown(f"""
 <div class="health-card">
 
-<h3>💊 {reminder[2]}</h3>
+<h3>💊 {reminder["medication"]}</h3>
 
 <p>
 
-<b>Dosage:</b> {reminder[3]}
+<b>Dosage:</b> {reminder["dosage"]}
 
 <br><br>
 
-<b>Reminder Time:</b> ⏰ {reminder[4]}
+<b>Reminder Time:</b> ⏰ {reminder["reminder_time"]}
 
 </p>
 

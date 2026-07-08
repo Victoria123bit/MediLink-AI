@@ -33,6 +33,17 @@ Sign in to continue accessing your personal healthcare dashboard.
         placeholder="Enter your password"
     )
 
+    # ===============================
+    # FORGOT PASSWORD
+    # ===============================
+
+    if st.button(
+        "🔑 Forgot Password?",
+        use_container_width=True
+    ):
+        st.session_state.show_forgot_password = True
+        st.rerun()
+
     st.divider()
 
     # ===============================
@@ -47,25 +58,24 @@ Sign in to continue accessing your personal healthcare dashboard.
 
         email = email.strip().lower()
 
-        # Validate input
         if not email or not password:
             st.error("⚠️ Please enter both your email address and password.")
             return
 
-        # Loading animation
         with st.spinner("Signing you in..."):
 
             user = login_user(email, password)
 
         if user:
 
-            # Save user session
             st.session_state.logged_in = True
-            st.session_state.user_id = user[0]
-            st.session_state.full_name = user[1]
-            st.session_state.email = user[2]
+            st.session_state.user_id = user["id"]
+            st.session_state.full_name = user["full_name"]
+            st.session_state.email = user["email"]
 
-            st.success(f"✅ Welcome back, {user[1]}!")
+            st.success(
+                f"✅ Welcome back, {user['full_name']}!"
+)
 
             st.balloons()
 

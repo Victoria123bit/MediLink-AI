@@ -4,7 +4,7 @@ from auth.auth import logout
 
 
 # ==========================================
-# SIDEBAR
+# SIDEBAR NAVIGATION
 # ==========================================
 
 def show_sidebar():
@@ -13,40 +13,61 @@ def show_sidebar():
     # LOGO
     # ==========================================
 
-    st.sidebar.image("assets/logo.png", width=170)
+    st.sidebar.image(
+        "assets/logo.png",
+        width=170
+    )
 
     st.sidebar.markdown("---")
+
 
     # ==========================================
     # USER INFORMATION
     # ==========================================
 
-    full_name = st.session_state.get("full_name", "User")
+    full_name = st.session_state.get(
+        "full_name",
+        "User"
+    )
 
     st.sidebar.success(
         f"👋 Welcome\n\n**{full_name}**"
     )
 
-    st.sidebar.info("🟢 Account Active")
+    st.sidebar.info(
+        "🟢 Account Active"
+    )
+
 
     st.sidebar.markdown("---")
 
+
     # ==========================================
-    # APPLICATION
+    # NAVIGATION MENU
     # ==========================================
 
-    st.sidebar.markdown("### 📌 MediLink AI")
+    st.sidebar.markdown(
+        "### 📌 MediLink AI"
+    )
 
-    st.sidebar.write("🏠 Home")
-    st.sidebar.write("🤖 Symptom Checker")
-    st.sidebar.write("📚 Health Education")
-    st.sidebar.write("💊 Medication Reminder")
-    st.sidebar.write("📊 Dashboard")
-    st.sidebar.write("🚑 Emergency Hospitals")
-    st.sidebar.write("👤 My Profile")
-    st.sidebar.write("ℹ️ About")
+
+    selected_page = st.sidebar.radio(
+        "Navigate",
+        [
+            "🏠 Home",
+            "🤖 Symptom Checker",
+            "📚 Health Education",
+            "💊 Medication Reminder",
+            "📊 Dashboard",
+            "🚑 Emergency Hospitals",
+            "👤 My Profile",
+            "ℹ️ About"
+        ]
+    )
+
 
     st.sidebar.markdown("---")
+
 
     # ==========================================
     # LOGOUT
@@ -57,4 +78,9 @@ def show_sidebar():
         use_container_width=True,
         type="primary"
     ):
+
         logout()
+        st.rerun()
+
+
+    return selected_page

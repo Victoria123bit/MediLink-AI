@@ -72,11 +72,11 @@ with col1:
 with col2:
 
     st.markdown(f"""
-### {user[0]}
+### {user["full_name"]}
 
 🟢 **Verified Member**
 
-📧 {user[1]}
+📧 {user["email"]}
 """)
 
 st.divider()
@@ -91,22 +91,22 @@ col1, col2 = st.columns(2)
 
 with col1:
 
-    st.info(f"""
+   st.info(f"""
 ### 👤 Full Name
 
-{user[0]}
+{user["full_name"]}
 """)
 
-    st.info(f"""
+   st.info(f"""
 ### 📱 Phone Number
 
-{user[2]}
+{user["phone"]}
 """)
 
-    st.info(f"""
+   st.info(f"""
 ### 🎂 Age
 
-{user[3]} Years
+{user["age"]} Years
 """)
 
 with col2:
@@ -114,13 +114,13 @@ with col2:
     st.info(f"""
 ### 🚻 Gender
 
-{user[4]}
+{user["gender"]}
 """)
 
     st.info(f"""
 ### 📅 Member Since
 
-{user[5][:10]}
+{user["created_at"][:10]}
 """)
 
     st.info("""
@@ -160,10 +160,12 @@ with col2:
 with col3:
 
     days = (
-        datetime.now() -
-        datetime.strptime(user[5][:10], "%Y-%m-%d")
-    ).days
-
+    datetime.now() -
+    datetime.strptime(
+        user["created_at"][:10],
+        "%Y-%m-%d"
+    )
+).days
     st.metric(
         "📅 Days With Us",
         days

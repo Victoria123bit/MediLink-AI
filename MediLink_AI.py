@@ -3,7 +3,9 @@ import streamlit as st
 from database.database import create_database
 from auth.login import login_page
 from auth.signup import signup_page
+from auth.forgot_password import forgot_password_page
 from auth.auth import check_login
+from utils.navigation import show_sidebar
 
 # ==========================================
 # PAGE CONFIG
@@ -39,6 +41,11 @@ load_css()
 
 create_database()
 
+params = st.query_params
+
+if params.get("page") == "9_Reset_Password":
+    st.switch_page("pages/9_Reset_Password.py")
+
 # ==========================================
 # SESSION VARIABLES
 # ==========================================
@@ -54,6 +61,13 @@ if "full_name" not in st.session_state:
 
 if "email" not in st.session_state:
     st.session_state.email = ""
+
+if "show_forgot_password" not in st.session_state:
+    st.session_state.show_forgot_password = False
+
+# ==========================================
+# LOGIN / SIGNUP SCREEN
+# ==========================================
 
 # ==========================================
 # LOGIN / SIGNUP SCREEN
@@ -86,13 +100,9 @@ and trusted health information.
         st.markdown("### 🌟 Why Choose MediLink AI?")
 
         st.success("🤖 AI-Powered Symptom Checker")
-
         st.success("📚 Health Education")
-
         st.success("💊 Medication Reminders")
-
         st.success("🚑 Emergency Hospital Finder")
-
         st.success("🔒 Secure Personal Health Account")
 
     with right:
@@ -109,17 +119,23 @@ and trusted health information.
 
         if option == "🔐 Login":
 
-            login_page()
+            if st.session_state.show_forgot_password:
+                forgot_password_page()
+            else:
+                login_page()
 
         else:
 
             signup_page()
 
     st.stop()
+# ==========================================
+# LOGGED-IN HOME SCREEN
+# ==========================================
 
-# ==========================================
-# HOME SCREEN
-# ==========================================
+# Show navigation sidebar
+show_sidebar()
+
 
 st.info("""
 ### 🚀 Getting Started
