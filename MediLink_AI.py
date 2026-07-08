@@ -5,7 +5,7 @@ from auth.login import login_page
 from auth.signup import signup_page
 from auth.forgot_password import forgot_password_page
 from auth.auth import check_login
-from utils.navigation import show_sidebar
+from utils.navigation import show_navigation
 
 # ==========================================
 # PAGE CONFIG
@@ -15,8 +15,33 @@ st.set_page_config(
     page_title="MediLink AI",
     page_icon="🏥",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
+
+# ==========================================
+# HIDE STREAMLIT SIDEBAR
+# ==========================================
+
+st.markdown("""
+<style>
+
+/* Hide the Streamlit sidebar */
+[data-testid="stSidebar"]{
+    display:none;
+}
+
+/* Hide the expand/collapse button */
+[data-testid="stSidebarCollapsedControl"]{
+    display:none;
+}
+
+/* Remove left margin */
+section.main{
+    margin-left:0rem;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # LOAD CSS
@@ -64,10 +89,6 @@ if "email" not in st.session_state:
 
 if "show_forgot_password" not in st.session_state:
     st.session_state.show_forgot_password = False
-
-# ==========================================
-# LOGIN / SIGNUP SCREEN
-# ==========================================
 
 # ==========================================
 # LOGIN / SIGNUP SCREEN
@@ -129,18 +150,17 @@ and trusted health information.
             signup_page()
 
     st.stop()
+
 # ==========================================
 # LOGGED-IN HOME SCREEN
 # ==========================================
 
-# Show navigation sidebar
-show_sidebar()
-
+show_navigation()
 
 st.info("""
 ### 🚀 Getting Started
 
-Use the **left sidebar** to access all MediLink AI features.
+Use the **navigation menu above** to access all MediLink AI features.
 
 You can:
 

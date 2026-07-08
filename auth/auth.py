@@ -48,9 +48,7 @@ def logout():
     Clear login session and return to login page.
     """
 
-    st.session_state.logged_in = False
-    st.session_state.user_id = None
-    st.session_state.full_name = ""
-    st.session_state.email = ""
+    st.session_state.clear()
 
+    st.rerun()
     st.switch_page("MediLink_AI.py")

@@ -1,7 +1,7 @@
 import streamlit as st
 
 from auth.auth import check_login
-from utils.navigation import show_sidebar
+from utils.navigation import show_navigation
 
 from ai.gemini import model
 
@@ -9,6 +9,41 @@ from utils.helper import (
     footer,
     section_title
 )
+
+# ==========================================
+# PAGE CONFIG
+# ==========================================
+
+st.set_page_config(
+    page_title="Health Education | MediLink AI",
+    page_icon="📚",
+    layout="wide"
+)
+
+# ==========================================
+# HIDE STREAMLIT SIDEBAR
+# ==========================================
+
+st.markdown("""
+<style>
+
+/* Hide Streamlit Sidebar */
+[data-testid="stSidebar"]{
+    display:none;
+}
+
+/* Hide Sidebar Toggle Button */
+[data-testid="stSidebarCollapsedControl"]{
+    display:none;
+}
+
+/* Remove left spacing */
+section.main{
+    margin-left:0rem;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # PROTECT PAGE
@@ -21,7 +56,7 @@ if not check_login():
 # SIDEBAR
 # ==========================================
 
-show_sidebar()
+show_navigation()
 
 # ==========================================
 # HERO SECTION

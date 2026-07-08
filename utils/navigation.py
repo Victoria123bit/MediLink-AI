@@ -1,76 +1,181 @@
 import streamlit as st
 
-from auth.auth import logout
 
+def show_navigation():
 
-# ==========================================
-# SIDEBAR NAVIGATION
-# ==========================================
+    # ==========================================
+    # CUSTOM CSS
+    # ==========================================
 
-def show_sidebar():
+    st.markdown("""
+    <style>
 
-    # Always show the sidebar expanded on desktop
-    st.set_page_config(
-        initial_sidebar_state="expanded"
-    )
+    /* Hide Streamlit Sidebar */
 
-    with st.sidebar:
+    [data-testid="stSidebar"]{
+        display:none;
+    }
 
-        st.image(
-            "assets/logo.png",
-            width=170
+    [data-testid="stSidebarCollapsedControl"]{
+        display:none;
+    }
+
+    section.main{
+        margin-left:0rem;
+    }
+
+    /* Header */
+
+    .title{
+        text-align:center;
+        color:#1565C0;
+        font-size:42px;
+        font-weight:bold;
+        margin-bottom:5px;
+    }
+
+    .subtitle{
+        text-align:center;
+        color:#666666;
+        font-size:18px;
+        margin-bottom:25px;
+    }
+
+    /* Buttons */
+
+    div.stButton > button{
+
+        height:60px;
+
+        width:100%;
+
+        border-radius:12px;
+
+        border:none;
+
+        background:#1565C0;
+
+        color:white;
+
+        font-size:16px;
+
+        font-weight:600;
+
+        transition:0.3s;
+
+        box-shadow:0 2px 8px rgba(0,0,0,.12);
+
+        margin-bottom:10px;
+
+    }
+
+    div.stButton > button:hover{
+
+        background:#2E7D32;
+
+        color:white;
+
+        transform:translateY(-3px);
+
+        box-shadow:0 8px 18px rgba(0,0,0,.20);
+
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ==========================================
+    # HEADER
+    # ==========================================
+
+    left, right = st.columns([6,1])
+
+    with left:
+
+        st.markdown(
+            "<div class='title'>🏥 MediLink AI</div>",
+            unsafe_allow_html=True
         )
 
-        st.markdown("---")
-
-        full_name = st.session_state.get(
-            "full_name",
-            "User"
+        st.markdown(
+            f"<div class='subtitle'>Welcome <b>{st.session_state.get('full_name','User')}</b> 👋</div>",
+            unsafe_allow_html=True
         )
 
-        st.success(
-            f"👋 Welcome\n\n**{full_name}**"
-        )
+    with right:
 
-        st.info("🟢 Account Active")
+        st.write("")
 
-        st.markdown("---")
+        if st.button("🚪 Logout", use_container_width=True):
 
-        st.markdown("### 📌 MediLink AI")
+            st.session_state.clear()
 
-        pages = {
-            "🏠 Home": "pages/1_Home.py",
-            "🤖 Symptom Checker": "pages/2_Symptom_Checker.py",
-            "📚 Health Education": "pages/3_Health_Education.py",
-            "💊 Medication Reminder": "pages/4_Medication_Reminder.py",
-            "📊 Dashboard": "pages/5_Dashboard.py",
-            "🚑 Emergency Hospitals": "pages/7_Emergency_Hospitals.py",
-            "👤 My Profile": "pages/8_My_Profile.py",
-            "ℹ️ About": "pages/6_About.py"
-        }
+            st.switch_page("MediLink_AI.py")
 
-        selected = st.radio(
-            "Navigate",
-            list(pages.keys()),
-            label_visibility="collapsed"
-        )
+    st.divider()
 
-        if st.button(
-            "🚪 Logout",
-            use_container_width=True,
-            type="primary"
-        ):
-            logout()
+    # ==========================================
+    # ROW 1
+    # ==========================================
 
-    # Switch pages
-    current = st.session_state.get("current_page")
+    c1, c2 = st.columns(2)
 
-    if current != selected:
+    with c1:
 
-        st.session_state.current_page = selected
+        if st.button("🏠\n\nHome", use_container_width=True):
+            st.switch_page("pages/1_Home.py")
 
-        st.switch_page(
-            pages[selected]
-        )
+    with c2:
 
-    return selected
+        if st.button("🤖\n\nAI Checker", use_container_width=True):
+            st.switch_page("pages/2_Symptom_Checker.py")
+
+    # ==========================================
+    # ROW 2
+    # ==========================================
+
+    c3, c4 = st.columns(2)
+
+    with c3:
+
+        if st.button("📚\n\nHealth Education", use_container_width=True):
+            st.switch_page("pages/3_Health_Education.py")
+
+    with c4:
+
+        if st.button("💊\n\nMedication", use_container_width=True):
+            st.switch_page("pages/4_Medication_Reminder.py")
+
+    # ==========================================
+    # ROW 3
+    # ==========================================
+
+    c5, c6 = st.columns(2)
+
+    with c5:
+
+        if st.button("📊\n\nDashboard", use_container_width=True):
+            st.switch_page("pages/5_Dashboard.py")
+
+    with c6:
+
+        if st.button("🚑\n\nEmergency", use_container_width=True):
+            st.switch_page("pages/7_Emergency_Hospitals.py")
+
+    # ==========================================
+    # ROW 4
+    # ==========================================
+
+    c7, c8 = st.columns(2)
+
+    with c7:
+
+        if st.button("👤\n\nMy Profile", use_container_width=True):
+            st.switch_page("pages/8_My_Profile.py")
+
+    with c8:
+
+        if st.button("ℹ️\n\nAbout", use_container_width=True):
+            st.switch_page("pages/6_About.py")
+
+    st.divider()
