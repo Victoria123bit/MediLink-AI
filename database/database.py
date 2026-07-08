@@ -198,6 +198,33 @@ def create_user(
 
     conn.commit()
     conn.close()
+
+
+# ==========================================
+# EMAIL EXISTS
+# ==========================================
+
+def email_exists(email):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id
+        FROM users
+        WHERE LOWER(email)=LOWER(?)
+        """,
+        (email.lower(),)
+    )
+
+    exists = cursor.fetchone() is not None
+
+    conn.close()
+
+    return exists
+
+
 # ==========================================
 # REGISTER USER
 # ==========================================
@@ -224,31 +251,6 @@ def register_user(
     )
 
     return True
-
-# ==========================================
-# EMAIL EXISTS
-# ==========================================
-
-def email_exists(email):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        SELECT id
-        FROM users
-        WHERE LOWER(email)=LOWER(?)
-        """,
-        (email.lower(),)
-    )
-
-    exists = cursor.fetchone() is not None
-
-    conn.close()
-
-    return exists
-
 
 # ==========================================
 # LOGIN USER
