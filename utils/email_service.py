@@ -70,6 +70,8 @@ def send_email(
 
     except Exception as e:
 
+        st.error(f"Email Error:{e}")
+
         print(f"Email Error: {e}")
 
         return False

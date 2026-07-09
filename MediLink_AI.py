@@ -131,7 +131,7 @@ and trusted health information.
         st.markdown("## Welcome 👋")
 
         option = st.radio(
-            "",
+            "Choose an option",
             [
                 "🔐 Login",
                 "📝 Create Account"
