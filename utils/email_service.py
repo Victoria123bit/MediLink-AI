@@ -1,26 +1,25 @@
 import os
 import smtplib
+import streamlit as st
 from email.message import EmailMessage
 from dotenv import load_dotenv
 
-
-# ==========================================
-# LOAD ENVIRONMENT VARIABLES
-# ==========================================
-
 load_dotenv()
 
-SMTP_EMAIL = st.secrets.get("SMTP_EMAIL", os.getenv("SMTP_EMAIL"))
-SMTP_PASSWORD = st.secrets.get("SMTP_PASSWORD", os.getenv("SMTP_PASSWORD"))
-SMTP_SERVER = st.secrets.get("SMTP_SERVER", os.getenv("SMTP_SERVER", "smtp.gmail.com"))
-SMTP_PORT = int(st.secrets.get("SMTP_PORT", os.getenv("SMTP_PORT", 587)))
+try:
+    SMTP_EMAIL = st.secrets["SMTP_EMAIL"]
+    SMTP_PASSWORD = st.secrets["SMTP_PASSWORD"]
+    SMTP_SERVER = st.secrets.get("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT = int(st.secrets.get("SMTP_PORT", 587))
+
+except Exception:
+    SMTP_EMAIL = os.getenv("SMTP_EMAIL")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 
 print("SMTP EMAIL:", SMTP_EMAIL)
-
-if SMTP_PASSWORD:
-    print("SMTP PASSWORD: Loaded Successfully")
-else:
-    print("SMTP PASSWORD: Not Found")
+print("SMTP PASSWORD Loaded:", bool(SMTP_PASSWORD))
 
 
 
