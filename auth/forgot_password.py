@@ -65,16 +65,21 @@ def forgot_password_page():
 
                 st.session_state.otp_sent = True
                 st.session_state.reset_email = email
+            
 
                 st.success(
                     "✅ Verification code sent to your email."
                 )
 
-                st.rerun()
+                st.write("OTP SENT:", st.session_state.otp_sent)
+                st.write("EMAIL:", st.session_state.reset_email)
+
+                #st.rerun()
 
             else:
-
                 st.error("Unable to send email.")
+
+                
 
     # ==========================================
     # STEP 2 - VERIFY OTP
