@@ -18,10 +18,6 @@ Sign in to continue accessing your personal healthcare dashboard.
 
     st.divider()
 
-    # ===============================
-    # LOGIN FORM
-    # ===============================
-
     email = st.text_input(
         "📧 Email Address",
         placeholder="Enter your email"
@@ -33,23 +29,22 @@ Sign in to continue accessing your personal healthcare dashboard.
         placeholder="Enter your password"
     )
 
-    # ===============================
-    # FORGOT PASSWORD
-    # ===============================
+    # Forgot Password Button
+    col1, col2, col3 = st.columns([4,2,4])
 
-    if st.button(
-        "🔑 Forgot Password?",
-        use_container_width=True
-    ):
-        st.session_state.show_forgot_password = True
-        st.rerun()
+    with col2:
 
-    st.divider()
+        if st.button(
+            "Forgot Password?",
+            type="secondary",
+            use_container_width=True
+        ):
+            st.session_state.show_forgot_password = True
+            st.rerun()
 
-    # ===============================
-    # LOGIN BUTTON
-    # ===============================
+    st.write("")
 
+    # Login Button
     if st.button(
         "🔐 Login",
         use_container_width=True,
@@ -75,7 +70,7 @@ Sign in to continue accessing your personal healthcare dashboard.
 
             st.success(
                 f"✅ Welcome back, {user['full_name']}!"
-)
+            )
 
             st.balloons()
 
