@@ -29,8 +29,8 @@ def show_navigation():
     .title{
         text-align:center;
         color:#1565C0;
-        font-size:42px;
-        font-weight:bold;
+        font-size:34px;
+        font-weight:700;
         margin-bottom:5px;
     }
 
