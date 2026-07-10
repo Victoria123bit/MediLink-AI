@@ -120,6 +120,7 @@ Rules:
     try:
 
         response = model.generate_content(prompt)
+        st.write("DEBUG: Gemini request completed")
 
         if response and hasattr(response, "text"):
             return response.text
@@ -130,7 +131,11 @@ Rules:
         )
 
     except Exception as e:
+        import traceback
+        st.error("Gemini Error:")
+        st.exception(e)
 
-        return (
-            f"❌ An error occurred while contacting the AI service:\n\n{str(e)}"
-        )
+        traceback.print_exc()
+
+        return f"❌ {str(e)}"
+        
