@@ -3,7 +3,7 @@ import streamlit as st
 from auth.auth import check_login
 from utils.navigation import show_navigation
 
-from ai.gemini import model
+from ai.gemini import client
 
 from utils.helper import (
     footer,
@@ -97,7 +97,6 @@ Choose any health topic below and MediLink AI will explain it in simple, easy-to
 section_title("Choose a Health Topic", "📖")
 
 topics = [
-
     "Malaria",
     "Typhoid Fever",
     "Diabetes",
@@ -114,12 +113,12 @@ topics = [
     "Healthy Living",
     "Food Safety",
     "Water Hygiene"
-
 ]
 
 selected_topic = st.selectbox(
-    "",
-    topics
+    "Select a health topic",
+    topics,
+    label_visibility="collapsed"
 )
 
 st.write("")
@@ -167,11 +166,29 @@ Rules:
 
         try:
 
-            response = model.generate_content(prompt)
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are MediLink AI, an AI healthcare education assistant "
+                            "designed for Nigeria. Provide educational information only. "
+                            "Never diagnose diseases or prescribe medications."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                temperature=0.4,
+                max_tokens=1200,
+            )
 
             st.success("✅ Lesson Ready")
 
-            st.markdown(response.text)
+            st.markdown(response.choices[0].message.content)
 
         except Exception as e:
 
@@ -189,7 +206,7 @@ This only affects the AI feature temporarily.
 
             else:
 
-                st.error("❌ Unable to contact Gemini AI.")
+                st.error("❌ Unable to contact the AI service.")
 
                 with st.expander("Technical Details"):
                     st.code(error)

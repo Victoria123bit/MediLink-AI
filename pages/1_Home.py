@@ -186,7 +186,7 @@ with left:
 with right:
 
     st.info("""
-🌍 Powered by Google Gemini AI
+🌍 Powered by AI Service
 
 🔒 Secure Password Encryption
 

@@ -2,7 +2,7 @@ import os
 import streamlit as st
 from streamlit.errors import StreamlitSecretNotFoundError
 from dotenv import load_dotenv
-import google.generativeai as genai
+from groq import Groq
 
 # ==========================================
 # LOAD ENVIRONMENT VARIABLES
@@ -11,7 +11,7 @@ import google.generativeai as genai
 load_dotenv()
 
 # ==========================================
-# GET GEMINI API KEY
+# GET GROQ API KEY
 # Works both locally (.env) and on Streamlit Cloud (Secrets)
 # ==========================================
 
@@ -19,30 +19,27 @@ api_key = None
 
 # Try Streamlit Secrets first
 try:
-    api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = st.secrets["GROQ_API_KEY"]
 except (StreamlitSecretNotFoundError, KeyError):
     pass
 
 # If not found, use local .env
 if not api_key:
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
 
 # If still not found, stop the app
 if not api_key:
     raise ValueError(
-        "❌ GEMINI_API_KEY not found.\n"
+        "❌ GROQ_API_KEY not found.\n"
         "Local: add it to your .env file.\n"
         "Deployment: add it to Streamlit Secrets."
     )
 
 # ==========================================
-# CONFIGURE GEMINI
+# CONFIGURE GROQ
 # ==========================================
 
-genai.configure(api_key=api_key)
-st.write("Using API key:", api_key[:10] + "...")
-
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = Groq(api_key=api_key)
 
 # ==========================================
 # AI HEALTH RESPONSE
@@ -50,7 +47,7 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 def get_health_response(symptoms):
     """
-    Generate educational healthcare guidance using Gemini AI.
+    Generate educational healthcare guidance using Groq AI.
     """
 
     symptoms = symptoms.strip()
@@ -119,23 +116,30 @@ Rules:
 
     try:
 
-        response = model.generate_content(prompt)
-        st.write("DEBUG: Gemini request completed")
-
-        if response and hasattr(response, "text"):
-            return response.text
-
-        return (
-            "⚠️ MediLink AI could not generate a response at the moment. "
-            "Please try again."
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are MediLink AI, an AI healthcare assistant designed for Nigeria. "
+                        "Provide educational health information only. Never diagnose diseases "
+                        "or prescribe medications."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            temperature=0.4,
+            max_tokens=1200,
         )
 
+        return response.choices[0].message.content
+
     except Exception as e:
-        import traceback
-        st.error("Gemini Error:")
-        st.exception(e)
-
-        traceback.print_exc()
-
+        st.error(
+            "⚠️ Sorry, the AI service is temporarily unavailable. Please try again in a few moments."
+        )
         return f"❌ {str(e)}"
-        

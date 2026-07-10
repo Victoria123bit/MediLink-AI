@@ -85,7 +85,7 @@ section_title("Who We Are", "🌍")
 st.markdown("""
 MediLink AI is an AI-powered healthcare education platform designed to help people in Nigeria access reliable health information anytime and anywhere.
 
-Using **Google Gemini AI**, MediLink AI provides educational guidance, symptom awareness, medication reminders, health education, and emergency healthcare resources.
+Using **AI Service**, MediLink AI provides educational guidance, symptom awareness, medication reminders, health education, and emergency healthcare resources.
 
 Our goal is to improve health awareness while encouraging users to seek professional medical care whenever necessary.
 """)
@@ -170,7 +170,7 @@ MediLink AI was developed using modern technologies:
 
 - 🐍 Python
 - 🎨 Streamlit
-- 🤖 Google Gemini AI
+- 🤖 Groq AI
 - 🗄 SQLite Database
 - 📊 Plotly
 - 🔒 bcrypt Password Encryption
@@ -266,7 +266,7 @@ st.markdown("""
 
 Special thanks to:
 
-- Google Gemini AI
+- Groq AI
 
 - Streamlit
 

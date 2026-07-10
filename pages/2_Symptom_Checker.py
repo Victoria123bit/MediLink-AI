@@ -4,6 +4,7 @@ from datetime import datetime
 from auth.auth import check_login
 from utils.navigation import show_navigation
 
+# CHANGED: Import Groq instead of Gemini
 from ai.gemini import get_health_response
 
 from database.database import (
@@ -77,7 +78,7 @@ st.markdown("""
 <p style="font-size:18px;">
 
 Describe your symptoms and receive educational
-health guidance powered by Google Gemini AI.
+health guidance powered by MediLink AI.
 
 </p>
 
@@ -105,8 +106,9 @@ The more details you provide, the better the educational guidance.
 section_title("Describe Your Symptoms", "🩺")
 
 symptoms = st.text_area(
-    "",
+    "Describe your symptoms",
     height=220,
+    label_visibility="collapsed",
     placeholder="""
 Example:
 
@@ -238,7 +240,7 @@ This only affects the AI feature temporarily.
 
             else:
 
-                st.error("❌ Unable to contact Gemini AI.")
+                st.error("❌ Unable to contact the AI service.")
 
                 with st.expander("Technical Details"):
 
